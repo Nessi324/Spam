@@ -12,12 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlRootElement;
 
-/**
- * This class represents an Email. It can be used together with JAXB.
- *
- * @author Simone Strippgen
- * 
- */
+
 @XmlRootElement
 public class Email {
     private static final DateFormat FORMAT = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT, Locale.GERMANY);
@@ -42,6 +37,7 @@ public class Email {
         this.importance = Importance.LOW;
         this.sent = Calendar.getInstance().getTime();
         this.received = Calendar.getInstance().getTime();
+        this.receivedString = FORMAT.format(received);
         this.read = false;
     }
 
@@ -171,6 +167,11 @@ public class Email {
     
     public String getReceived() {
         return FORMAT.format(received);
+    }
+    
+
+    public String getReceivedString() {
+        return receivedString;
     }
 
     public void setReceived(Date date) {

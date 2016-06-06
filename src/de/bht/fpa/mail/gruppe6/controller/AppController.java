@@ -1,9 +1,6 @@
 package de.bht.fpa.mail.gruppe6.controller;
 
-import de.bht.fpa.mail.gruppe6.model.applicationLogic.EmailManager;
-import de.bht.fpa.mail.gruppe6.model.applicationLogic.EmailManagerIF;
-import de.bht.fpa.mail.gruppe6.model.applicationLogic.FolderManager;
-import de.bht.fpa.mail.gruppe6.model.applicationLogic.FolderManagerIF;
+import de.bht.fpa.mail.gruppe6.model.applicationLogic.*;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -14,6 +11,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import de.bht.fpa.mail.gruppe6.model.data.Component;
 import de.bht.fpa.mail.gruppe6.model.data.Email;
+import de.bht.fpa.mail.gruppe6.model.data.Email.Importance;
 import de.bht.fpa.mail.gruppe6.model.data.Folder;
 import java.io.File;
 import java.io.IOException;
@@ -22,15 +20,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.*;
+import javafx.scene.*;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 public class AppController implements Initializable {
 
@@ -38,7 +38,29 @@ public class AppController implements Initializable {
     private TreeView<Component> directoryTree;
     @FXML
     private Menu file;
-
+    @FXML
+    private TableView<Email> tableview;
+    @FXML
+    private TableColumn<Email, String> importance;
+    @FXML
+    private TableColumn<Email, String> received;
+    @FXML
+    private TableColumn<Email, String> read;
+    @FXML
+    private TableColumn<Email, String> sender;
+    @FXML
+    private TableColumn<Email, String> recipients;
+    @FXML
+    private TableColumn<Email, String> subject;
+    @FXML
+    private TextField searchField;
+    @FXML
+    private Label numberOfMails;
+    @FXML 
+    private TextArea textarea;
+    @FXML 
+    private TextFlow textflow;
+    
     private EmailManagerIF mails = new EmailManager();
     private File startDirectory = new File(System.getProperty("user.home"));
     private FolderManagerIF reader;
@@ -47,46 +69,44 @@ public class AppController implements Initializable {
     private static final TreeItem<String> loading = new TreeItem<String>(); //Dummy tree item, used to fill other TreeItems with a children to enable the expand arrow
     private final Image open = new Image(getClass().getResourceAsStream("/de/bht/fpa/mail/gruppe6/pic/open.png"));
     private final Image close = new Image(getClass().getResourceAsStream("/de/bht/fpa/mail/gruppe6/pic/closed.png"));
+    private static ObservableList<Email> tableinfo;
+    private static ObservableList<Email> ersatz;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configureMenue(file, (e) -> handleAll(e));
         configureTree(startDirectory);
         directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> showEmail(new_val));
-
+        directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> generateTable(new_val));
+        tableinfo = FXCollections.observableArrayList();
+        inItTable();
+        searchField.textProperty().addListener((e) -> filterList());
+        tableview.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> 
+        { displayEmail(oldValue, newValue);});
+    
+    }
+    public void inItTable() {
+        importance.setCellValueFactory(new PropertyValueFactory<>("importance"));
+        received.setCellValueFactory(new PropertyValueFactory<>("received"));
+        read.setCellValueFactory(new PropertyValueFactory<>("read"));
+        sender.setCellValueFactory(new PropertyValueFactory<>("sender"));
+        subject.setCellValueFactory(new PropertyValueFactory<>("subject"));
+        recipients.setCellValueFactory(new PropertyValueFactory<>("receiverTo"));
     }
 
-    /**
-     * Initializing the TreeView configuration
-     *
-     * @param x the new Directory for the TreeView
-     */
     public void configureTree(File file) {
         reader = new FolderManager(file);
-        //creads the home directory and store it into component
         Component component = reader.getTopFolder();
-        //create the rootNode from the component
         rootNode = new TreeItem<Component>(component);
-        //set the image and set sizes
         ImageView image = new ImageView(open);
         rootNode.setGraphic(image);
-
-        //expand the root node by default
         rootNode.setExpanded(true);
-
         rootNode.getValue().getComponents().forEach((Component c) -> {
             rootNode.getChildren().add(buildTreeNode(c));
         });
-        //set the root to our TreeView
         directoryTree.setRoot(rootNode);
     }
 
-    /**
-     * Expands the give Node(TreeItem)
-     *
-     * @param node The tree item that should get expanded
-     * @return void
-     */
     public void expandNode(TreeItem<Component> node) {
         //if the node does not have the dummy inside we already load its children and we can return
         if (!node.getChildren().get(0).equals(loading)) {
@@ -102,13 +122,6 @@ public class AppController implements Initializable {
         }
     }
 
-    /**
-     * Event handler for expand
-     *
-     * @param observable
-     * @param oldValue
-     * @param newValue
-     */
     public void handleExpand(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
         BooleanProperty bb = (BooleanProperty) observable;
         TreeItem<Component> t = (TreeItem<Component>) bb.getBean();
@@ -137,10 +150,10 @@ public class AppController implements Initializable {
             });
             item.getChildren().add(loading);
         }
-        else if(!c.isExpandable()){
-        image = new ImageView(open);
-        item.setGraphic(image);
-        
+        else if (!c.isExpandable()) {
+            image = new ImageView(open);
+            item.setGraphic(image);
+
         }
         return item;
 
@@ -226,5 +239,62 @@ public class AppController implements Initializable {
                 }
             }
         }
+    }
+
+    private void generateTable(TreeItem<Component> folder) {
+        if (folder != null) {
+            Folder f = (Folder) folder.getValue();
+            numberOfMails.setText(f.getEmails().size() + "");
+            for (Email x : f.getEmails()) {
+                if (x != null) {
+                    String type = x.getImportance();
+                    Importance imp = Importance.valueOf(type);
+                    Email emaildata = new Email(x.getSender(), x.getReceiverListTo(), x.getSubject(), x.getText(), imp);
+                    emaildata.setRead(x.getRead());
+                    emaildata.setReceived(x.getReceived());
+                    tableinfo.add(emaildata);
+                }
+            }
+            tableview.setItems(tableinfo);
+        }
+    }
+
+    private void filterList() {
+        ersatz = FXCollections.observableArrayList();
+        String suche = searchField.getText();
+        for (Email x : tableinfo) {
+            if (x.toString().toLowerCase().contains(suche)) {
+                String type = x.getImportance();
+                Importance imp = Importance.valueOf(type);
+                Email emaildata = new Email(x.getSender(), x.getReceiverListTo(), x.getSubject(), x.getText(), imp);
+                emaildata.setRead(x.getRead());
+                emaildata.setReceived(x.getReceived());
+                ersatz.add(emaildata);
+            }
+        }
+        tableview.setItems(ersatz);
+
+    }
+
+    private void displayEmail(Email oldValue, Email newValue) {
+        if(oldValue== newValue){}
+        else {
+            textflow.getChildren().clear();
+            Text text = new Text(newValue.getSender()+" \n"+
+                    newValue.getSubject() +"\n" 
+                    +newValue.getReceived()+"\n"+
+                    newValue.getReceiver());
+            text.setFont(Font.font("System", FontWeight.NORMAL, 12));
+            textflow.setLineSpacing(10);
+            textflow.getChildren().add(text);
+            textarea.clear();
+            textarea.appendText("Betreff: " +newValue.getSubject()+" \n"+
+            "Datum: " +newValue.getReceived() +"\n"+
+            "Von: " +newValue.getSender()+
+            "   Antwort an: " +newValue.getReceiverCC()+"\n"+
+            "An: " +newValue.getReceiverTo()+"\n"+
+            "Nachricht: \n"+newValue.getText());
+        }
+    
     }
 }
