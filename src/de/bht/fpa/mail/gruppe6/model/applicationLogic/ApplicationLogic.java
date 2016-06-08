@@ -5,14 +5,6 @@
  */
 package de.bht.fpa.mail.gruppe6.model.applicationLogic;
 
-/**
- *
- * @author Nessi
- */
-public class TableManager {
-
-    public TableManager() {
-    }
+public class ApplicationLogic {
     
-
 }

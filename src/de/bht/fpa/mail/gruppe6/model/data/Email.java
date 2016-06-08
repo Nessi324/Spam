@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Email {
-    private static final DateFormat FORMAT = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT, Locale.GERMANY);
+    public static final DateFormat FORMAT = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT, Locale.GERMANY);
     private String sender;
     private ArrayList<String> receiverTo;
     private ArrayList<String> receiverCC;
@@ -37,7 +37,6 @@ public class Email {
         this.importance = Importance.LOW;
         this.sent = Calendar.getInstance().getTime();
         this.received = Calendar.getInstance().getTime();
-        this.receivedString = FORMAT.format(received);
         this.read = false;
     }
 
@@ -169,11 +168,6 @@ public class Email {
         return FORMAT.format(received);
     }
     
-
-    public String getReceivedString() {
-        return receivedString;
-    }
-
     public void setReceived(Date date) {
         received = date;
     }
@@ -217,7 +211,7 @@ public class Email {
         s.append("]").append(" ");
         return s.toString();
     }
-
+    
     public static enum Importance {
 
         HIGH, NORMAL, LOW

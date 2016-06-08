@@ -1,6 +1,5 @@
 package de.bht.fpa.mail.gruppe6.controller;
 
-import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -49,7 +48,6 @@ public class HistoryController implements Initializable {
             data.add(message);
         } else {
         historyData.remove(message);
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
         ObservableList<String> data = (ObservableList<String>) list.getSelectionModel().getSelectedItems();
         data.addListener((ListChangeListener.Change<? extends String> c) -> ok.setDisable(false));
 
