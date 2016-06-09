@@ -54,23 +54,22 @@ public class AppController implements Initializable {
     @FXML
     private TextFlow textflow;
 
-    private EmailManagerIF mails = new EmailManager();
     private File startDirectory = new File(System.getProperty("user.home"));
-    private FolderManagerIF reader;
-    private TreeItem<Component> rootNode;// The rootNode of the TreeView
+    private TreeItem<Component> rootNode;
     private static ArrayList<String> historyData = new ArrayList<String>();
     private static final TreeItem<String> loading = new TreeItem<String>(); //Dummy tree item, used to fill other TreeItems with a children to enable the expand arrow
     private final Image open = new Image(getClass().getResourceAsStream("/de/bht/fpa/mail/gruppe6/pic/open.png"));
     private final Image close = new Image(getClass().getResourceAsStream("/de/bht/fpa/mail/gruppe6/pic/closed.png"));
-    private static ObservableList<Email> tableinfo;
-    private static ObservableList<Email> ersatz;
+    public static ObservableList<Email> tableinfo;
+    public ApplicationLogicIF app ;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configureMenue(file, (e) -> handleAll(e));
+        app = new ApplicationLogic(startDirectory);
         changeDirectory(startDirectory);
-        directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> showEmail(new_val));
-        directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> generateTable(new_val));
+        //directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> showEmail(new_val));
+        directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> loadTable(new_val));
         tableinfo = FXCollections.observableArrayList();
         inItTable();
         searchField.textProperty().addListener((e) -> filterList());
@@ -107,13 +106,13 @@ public class AppController implements Initializable {
         stage.setTitle("Open New Directory");
         DirectoryChooser fs = new DirectoryChooser();
         File file = fs.showDialog(stage);
-        mails.saveEmails(file);
+        app.saveEmails(file);
     }
     
     private void showEmail(TreeItem<Component> folder) {
         if (folder != null) {
             Folder f = (Folder) folder.getValue();
-            mails.loadEmails(f);
+            app.loadEmails(f);
             System.out.println("\n\nDer Ordner befindet sich in " + f.getPath());
             System.out.println("Sie haben " + f.getEmails().size() + " Emails in diesem Ordner :)");
             if (f.getEmails().size() > 0) {
@@ -124,10 +123,12 @@ public class AppController implements Initializable {
         }
     }
 
-    private void generateTable(TreeItem<Component> folder) {
+    private void loadTable(TreeItem<Component> treeitem) {
         tableview.getItems().clear();
-        if (folder != null) {
-            Folder f = (Folder) folder.getValue();
+        Folder f = null;
+        if (treeitem != null) {
+            f = (Folder) treeitem.getValue();
+            app.loadEmails(f);
             for (Email x : f.getEmails()) {
                 if (x != null) {
                     String type = x.getImportance();
@@ -141,30 +142,14 @@ public class AppController implements Initializable {
             tableview.setItems(tableinfo);
             numberOfMails.setText(tableinfo.size()+"");
         }
+        treeitem.setValue(null);
+        treeitem.setValue(f);
     }
-    //Darstellungslogik
 
     private void filterList() {
         String pattern = searchField.getText();
-        tableview.setItems(search(pattern));
+        tableview.setItems(app.search(pattern));
         numberOfMails.setText(tableview.getItems().size()+"");
-
-    }
-    //Anwendungslogik
-
-    private ObservableList<Email> search(String pattern) {
-        ersatz = FXCollections.observableArrayList();
-        for (Email x : tableinfo) {
-            if (x.toString().toLowerCase().contains(pattern) || x.getText().contains(pattern)) {
-                String type = x.getImportance();
-                Importance imp = Importance.valueOf(type);
-                Email emaildata = new Email(x.getSender(), x.getReceiverListTo(), x.getSubject(), x.getText(), imp);
-                emaildata.setRead(x.getRead());
-                emaildata.setReceived(x.getReceived());
-                ersatz.add(emaildata);
-            }
-        }
-        return ersatz;
     }
 
     public static ObservableList<Email> getTableinfo() {
@@ -206,8 +191,8 @@ public class AppController implements Initializable {
     }
 
     public void changeDirectory(File file) {
-        reader = new FolderManager(file);
-        Component component = reader.getTopFolder();
+        app = new ApplicationLogic(file);
+        Component component = app.getTopFolder();
         rootNode = new TreeItem<Component>(component);
         ImageView image = new ImageView(open);
         rootNode.setGraphic(image);
@@ -293,7 +278,7 @@ public class AppController implements Initializable {
         else {
             node.getChildren().remove(loading);
             Folder folder = (Folder) node.getValue();
-            reader.loadContent(folder);
+            app.loadContent(folder);
             //and we render the children
             folder.getComponents().forEach((Component c) -> {
                 node.getChildren().add(buildTreeNode(c));

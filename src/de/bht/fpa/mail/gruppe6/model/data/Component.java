@@ -8,7 +8,7 @@ public abstract class Component {
     private String path;
     // name of the component (without path)
     private String name;
-
+    
     public Component(File path) {
         this.path = path.getAbsolutePath();
         this.name = path.getName();
@@ -42,6 +42,6 @@ public abstract class Component {
     }
 
     public String toString() {
-        return name;
+        return getName();
     }
 }

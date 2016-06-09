@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
@@ -18,6 +19,8 @@ import javax.xml.bind.Marshaller;
  * @author Nessi
  */
 public class EmailManager implements EmailManagerIF{
+    
+    private static ObservableList<Email> ersatz;
     
     public EmailManager() {
     }
@@ -55,5 +58,20 @@ public class EmailManager implements EmailManagerIF{
             Logger.getLogger(AppController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+    @Override
+       public ObservableList<Email> search(String pattern) {
+        ersatz = FXCollections.observableArrayList();
+        for (Email x : AppController.tableinfo) {
+            if (x.toString().toLowerCase().contains(pattern) || x.getText().contains(pattern)) {
+                String type = x.getImportance();
+                Email.Importance imp = Email.Importance.valueOf(type);
+                Email emaildata = new Email(x.getSender(), x.getReceiverListTo(), x.getSubject(), x.getText(), imp);
+                emaildata.setRead(x.getRead());
+                emaildata.setReceived(x.getReceived());
+                ersatz.add(emaildata);
+            }
+        }
+        return ersatz;
     }
 }

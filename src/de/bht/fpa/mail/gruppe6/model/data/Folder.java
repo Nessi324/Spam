@@ -42,4 +42,15 @@ public class Folder extends Component {
     public void addEmail(Email message) {
         emails.add(message);
     }
+
+    @Override
+    public String toString() {
+        if (getEmails().size() > 0 && getEmails() != null) {
+            return getName() + " [" + getEmails().size() + "]";
+        }
+        else {
+            return getName();
+        }
+    }
+
 }

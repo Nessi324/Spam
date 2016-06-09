@@ -3,7 +3,7 @@ package de.bht.fpa.mail.gruppe6.model.applicationLogic;
 import de.bht.fpa.mail.gruppe6.model.data.Folder;
 import java.io.File;
 
-public class FolderManager implements FolderManagerIF{
+public class FolderManager {
 
     private Folder baseFolder;
 
@@ -12,7 +12,6 @@ public class FolderManager implements FolderManagerIF{
         loadContent(baseFolder);
     }
 
-    @Override
     public void loadContent(Folder f) {
         if(f.getComponents().isEmpty()){
         File file = new File(f.getPath());

@@ -25,7 +25,6 @@ public class Email {
     private Importance importance;
     private Date sent;
     private Date received;
-    private String receivedString;
     private boolean read;
 
     public Email() {

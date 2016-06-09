@@ -4,6 +4,7 @@ import de.bht.fpa.mail.gruppe6.model.data.Email;
 import de.bht.fpa.mail.gruppe6.model.data.Folder;
 import java.io.File;
 import java.util.List;
+import javafx.collections.ObservableList;
 
 public interface ApplicationLogicIF {
 
@@ -27,7 +28,7 @@ public interface ApplicationLogicIF {
      * @return a list of all emails that contain the pattern
      * @param pattern contains a string for comparison with email content
      */
-    List<Email> search(String pattern);
+    ObservableList<Email> search(String pattern);//List
 
     /**
      * Loads all emails in the directory path of the given folder
