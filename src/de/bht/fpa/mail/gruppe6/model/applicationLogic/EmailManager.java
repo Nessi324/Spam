@@ -18,30 +18,33 @@ import javax.xml.bind.Marshaller;
  *
  * @author Nessi
  */
-public class EmailManager implements EmailManagerIF{
-    
+public class EmailManager {
+
     private static ObservableList<Email> ersatz;
-    
+
     public EmailManager() {
     }
 
-    @Override
     public void loadEmails(Folder f) {
         if (f.getEmails().isEmpty()) {
             File file = new File(f.getPath());
-            FileFilter filter = (File name) -> name.getName().endsWith(".xml");
-            for (File x : file.listFiles(filter)) {
-                Email email = JAXB.unmarshal(x, Email.class);
-                if (!email.toString().contains("false")) {
-                    f.addEmail(email);
+            if (!file.isHidden()) {
+                FileFilter filter = (File name) -> name.getName().endsWith(".xml");
+                for (File x : file.listFiles(filter)) {
+                    if (!x.isHidden()) {
+                        Email email = JAXB.unmarshal(x, Email.class);
+                        if (!email.toString().contains("false")) {
+                            f.addEmail(email);
+                        }
+                    }
                 }
             }
         }
     }
-    @Override
-       public void saveEmails(File file) {
+
+    public void saveEmails(File file) {
         try {
-            
+
             JAXBContext context = JAXBContext.newInstance(Email.class);
             Marshaller m = context.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -59,8 +62,8 @@ public class EmailManager implements EmailManagerIF{
         }
 
     }
-    @Override
-       public ObservableList<Email> search(String pattern) {
+
+    public ObservableList<Email> search(String pattern) {
         ersatz = FXCollections.observableArrayList();
         for (Email x : AppController.tableinfo) {
             if (x.toString().toLowerCase().contains(pattern) || x.getText().contains(pattern)) {

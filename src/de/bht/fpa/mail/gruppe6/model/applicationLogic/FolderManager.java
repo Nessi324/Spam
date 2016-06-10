@@ -5,37 +5,44 @@ import java.io.File;
 
 public class FolderManager {
 
-    private Folder baseFolder;
+    private Folder folder;
 
     public FolderManager(File file) {
-        baseFolder = new Folder(file, true);
-        loadContent(baseFolder);
+        folder = new Folder(file, true);
+        loadContent(folder);
     }
 
     public void loadContent(Folder f) {
-        if(f.getComponents().isEmpty()){
-        File file = new File(f.getPath());
-        for (File fs : file.listFiles()) {
-            if(fs!=null){
-            if (fs.isDirectory()) {
-                f.addComponent(new Folder(fs, hasSubFolder(fs)));
+        if (f.getComponents().isEmpty()) {
+            File file = new File(f.getPath());
+            for (File fs : file.listFiles()) {
+                    if (fs!=null&&fs.isDirectory()&&!fs.isHidden()) {
+                        f.addComponent(new Folder(fs, hasSubFolder(fs)));
+                    }
+                
             }
-            }
-        }
         }
     }
 
     private boolean hasSubFolder(File file) {
-        if(file.listFiles()!=null){
-        for (File x : file.listFiles()) {
-            if (x.isDirectory()) {
-                return true;
+        if (file.listFiles() != null) {
+            for (File x : file.listFiles()) {
+                if (x.isDirectory()) {
+                    return true;
+                }
             }
-        }}
-       return false;
+        }
+        return false;
     }
 
     public Folder getTopFolder() {
-        return baseFolder;
+        return folder;
+    }
+
+    public void changeDirectory(File file) {
+        if (file != null) {
+         folder = new Folder(file, true);
+         loadContent(folder);
+        }
     }
 }

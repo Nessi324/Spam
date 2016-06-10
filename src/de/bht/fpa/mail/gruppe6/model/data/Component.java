@@ -42,6 +42,6 @@ public abstract class Component {
     }
 
     public String toString() {
-        return getName();
+        return name;
     }
 }

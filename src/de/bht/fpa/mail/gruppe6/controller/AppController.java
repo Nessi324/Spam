@@ -10,6 +10,7 @@ import de.bht.fpa.mail.gruppe6.model.data.Email;
 import de.bht.fpa.mail.gruppe6.model.data.Email.Importance;
 import de.bht.fpa.mail.gruppe6.model.data.Folder;
 import java.io.*;
+import java.text.ParseException;
 import java.util.*;
 import java.util.logging.*;
 import javafx.beans.property.BooleanProperty;
@@ -57,19 +58,19 @@ public class AppController implements Initializable {
     private File startDirectory = new File(System.getProperty("user.home"));
     private TreeItem<Component> rootNode;
     private static ArrayList<String> historyData = new ArrayList<String>();
-    private static final TreeItem<String> loading = new TreeItem<String>(); //Dummy tree item, used to fill other TreeItems with a children to enable the expand arrow
+    private static final TreeItem<String> loading = new TreeItem<String>();
     private final Image open = new Image(getClass().getResourceAsStream("/de/bht/fpa/mail/gruppe6/pic/open.png"));
     private final Image close = new Image(getClass().getResourceAsStream("/de/bht/fpa/mail/gruppe6/pic/closed.png"));
     public static ObservableList<Email> tableinfo;
-    public ApplicationLogicIF app ;
+    public ApplicationLogicIF app;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configureMenue(file, (e) -> handleAll(e));
         app = new ApplicationLogic(startDirectory);
-        changeDirectory(startDirectory);
+        buildTree(startDirectory);
         //directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> showEmail(new_val));
-        directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> loadTable(new_val));
+        directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> fillTableWithEmails(new_val));
         tableinfo = FXCollections.observableArrayList();
         inItTable();
         searchField.textProperty().addListener((e) -> filterList());
@@ -100,7 +101,7 @@ public class AppController implements Initializable {
             }
         }
     }
-    
+
     private void emailWindow(ActionEvent e) {
         Stage stage = new Stage();
         stage.setTitle("Open New Directory");
@@ -108,22 +109,8 @@ public class AppController implements Initializable {
         File file = fs.showDialog(stage);
         app.saveEmails(file);
     }
-    
-    private void showEmail(TreeItem<Component> folder) {
-        if (folder != null) {
-            Folder f = (Folder) folder.getValue();
-            app.loadEmails(f);
-            System.out.println("\n\nDer Ordner befindet sich in " + f.getPath());
-            System.out.println("Sie haben " + f.getEmails().size() + " Emails in diesem Ordner :)");
-            if (f.getEmails().size() > 0) {
-                for (Email x : f.getEmails()) {
-                    System.out.println(x);
-                }
-            }
-        }
-    }
 
-    private void loadTable(TreeItem<Component> treeitem) {
+    private void fillTableWithEmails(TreeItem<Component> treeitem) {
         tableview.getItems().clear();
         Folder f = null;
         if (treeitem != null) {
@@ -140,7 +127,7 @@ public class AppController implements Initializable {
                 }
             }
             tableview.setItems(tableinfo);
-            numberOfMails.setText(tableinfo.size()+"");
+            numberOfMails.setText(tableinfo.size() + "");
         }
         treeitem.setValue(null);
         treeitem.setValue(f);
@@ -149,7 +136,7 @@ public class AppController implements Initializable {
     private void filterList() {
         String pattern = searchField.getText();
         tableview.setItems(app.search(pattern));
-        numberOfMails.setText(tableview.getItems().size()+"");
+        numberOfMails.setText(tableview.getItems().size() + "");
     }
 
     public static ObservableList<Email> getTableinfo() {
@@ -175,7 +162,7 @@ public class AppController implements Initializable {
             textarea.appendText(text2);
         }
     }
-    
+
     public void handleExpand(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
         BooleanProperty bb = (BooleanProperty) observable;
         TreeItem<Component> t = (TreeItem<Component>) bb.getBean();
@@ -190,8 +177,8 @@ public class AppController implements Initializable {
         }
     }
 
-    public void changeDirectory(File file) {
-        app = new ApplicationLogic(file);
+    public void buildTree(File file) {
+        app.changeDirectory(file);
         Component component = app.getTopFolder();
         rootNode = new TreeItem<Component>(component);
         ImageView image = new ImageView(open);
@@ -230,7 +217,7 @@ public class AppController implements Initializable {
             String y = s.toString();
             fs.setInitialDirectory(s);
             addHistory(y);
-            changeDirectory(s);
+            buildTree(s);
         }
     }
 
@@ -258,8 +245,22 @@ public class AppController implements Initializable {
     }
 
     public void historyAction(String x) {
-        File newfile = new File(x);
-        changeDirectory(newfile);
+        File file = new File(x);
+        buildTree(file);
+    }
+
+    public int compare(String t1, String t2) {
+        Date date1 = null;
+        Date date2 = null;
+        try {
+            if (t1 != null && t2 != null) {
+                date1 = Email.FORMAT.parse(t1);
+                date2 = Email.FORMAT.parse(t2);
+            }
+        } catch (ParseException ex) {
+            Logger.getLogger(AppController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return date1.compareTo(date2);
     }
 
     public void inItTable() {
@@ -269,6 +270,8 @@ public class AppController implements Initializable {
         sender.setCellValueFactory(new PropertyValueFactory<>("sender"));
         subject.setCellValueFactory(new PropertyValueFactory<>("subject"));
         recipients.setCellValueFactory(new PropertyValueFactory<>("receiverTo"));
+        received.setComparator((String date1, String date2) -> compare(date1, date2));
+        tableview.getSortOrder().add(received);
     }
 
     public void expandNode(TreeItem<Component> node) {
@@ -286,9 +289,17 @@ public class AppController implements Initializable {
         }
     }
 
-//    public int compare(String t1, String t2) throws ParseException {
-//        Date date1 = Email.FORMAT.parse(t1);
-//        Date date2 = Email.FORMAT.parse(t2);
-//        return Collator.getInstance().compare(date1, date2);
+//        private void showEmail(TreeItem<Component> folder) {
+//        if (folder != null) {
+//            Folder f = (Folder) folder.getValue();
+//            app.loadEmails(f);
+//            System.out.println("\n\nDer Ordner befindet sich in " + f.getPath());
+//            System.out.println("Sie haben " + f.getEmails().size() + " Emails in diesem Ordner :)");
+//            if (f.getEmails().size() > 0) {
+//                for (Email x : f.getEmails()) {
+//                    System.out.println(x);
+//                }
+//            }
+//        }
 //    }
 }

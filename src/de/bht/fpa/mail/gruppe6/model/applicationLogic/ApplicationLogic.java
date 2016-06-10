@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package de.bht.fpa.mail.gruppe6.model.applicationLogic;
 
 import de.bht.fpa.mail.gruppe6.model.data.Email;
@@ -42,9 +38,9 @@ public class ApplicationLogic implements ApplicationLogicIF {
 
     @Override
     public void changeDirectory(File file) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    folder.changeDirectory(file);
     }
-
+    
     @Override
     public void saveEmails(File file) {
         mails.saveEmails(file);
