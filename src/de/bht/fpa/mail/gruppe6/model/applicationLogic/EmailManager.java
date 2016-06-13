@@ -31,12 +31,11 @@ public class EmailManager {
             if (!file.isHidden()) {
                 FileFilter filter = (File name) -> name.getName().endsWith(".xml");
                 for (File x : file.listFiles(filter)) {
-                    if (!x.isHidden()) {
-                        Email email = JAXB.unmarshal(x, Email.class);
-                        if (!email.toString().contains("false")) {
-                            f.addEmail(email);
-                        }
+                    Email email = JAXB.unmarshal(x, Email.class);
+                    if (!email.toString().contains("false")) {
+                        f.addEmail(email);
                     }
+
                 }
             }
         }

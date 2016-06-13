@@ -68,7 +68,7 @@ public class AppController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         configureMenue(file, (e) -> handleAll(e));
         app = new ApplicationLogic(startDirectory);
-        buildTree(startDirectory);
+        buildTreeBase(startDirectory);
         //directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> showEmail(new_val));
         directoryTree.getSelectionModel().selectedItemProperty().addListener((obs, old_val, new_val) -> fillTableWithEmails(new_val));
         tableinfo = FXCollections.observableArrayList();
@@ -116,6 +116,7 @@ public class AppController implements Initializable {
         if (treeitem != null) {
             f = (Folder) treeitem.getValue();
             app.loadEmails(f);
+            f.isLoaded(f);
             for (Email x : f.getEmails()) {
                 if (x != null) {
                     String type = x.getImportance();
@@ -177,7 +178,7 @@ public class AppController implements Initializable {
         }
     }
 
-    public void buildTree(File file) {
+    public void buildTreeBase(File file) {
         app.changeDirectory(file);
         Component component = app.getTopFolder();
         rootNode = new TreeItem<Component>(component);
@@ -193,10 +194,8 @@ public class AppController implements Initializable {
         ImageView image = new ImageView(close);
         items.setGraphic(image);
         if (c.isExpandable()) {
-            //attach event handler, wich takes effect if the TreeItem gets expanded
-            items.expandedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-                handleExpand(observable, oldValue, newValue);
-            });
+            items.expandedProperty().addListener((ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) 
+            -> handleExpand(observable, oldValue, newValue));
             items.getChildren().add(loading);
         }
         else if (!c.isExpandable()) {
@@ -217,7 +216,7 @@ public class AppController implements Initializable {
             String y = s.toString();
             fs.setInitialDirectory(s);
             addHistory(y);
-            buildTree(s);
+            buildTreeBase(s);
         }
     }
 
@@ -246,7 +245,7 @@ public class AppController implements Initializable {
 
     public void historyAction(String x) {
         File file = new File(x);
-        buildTree(file);
+        buildTreeBase(file);
     }
 
     public int compare(String t1, String t2) {

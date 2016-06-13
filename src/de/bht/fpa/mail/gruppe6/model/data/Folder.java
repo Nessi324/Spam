@@ -13,6 +13,7 @@ public class Folder extends Component {
     private ArrayList<Email> emails;
     private final ArrayList<Component> content = new ArrayList<Component>();
     private boolean expandable;
+    private boolean loaded;
 
     public Folder(File path, boolean expandable) {
         super(path);
@@ -43,13 +44,22 @@ public class Folder extends Component {
         emails.add(message);
     }
 
+    public boolean getLoaded() {
+        return loaded;
+    }
+    
+    public void isLoaded(Folder folder){
+    loaded = true;
+    }
+    
     @Override
     public String toString() {
         if (getEmails().size() > 0 && getEmails() != null) {
             return getName() + " [" + getEmails().size() + "]";
         }
-        else {
-            return getName();
+        else if (getLoaded()) {
+            return getName() + " [0]";
         }
+        return getName();
     }
 }
