@@ -48,7 +48,7 @@ public class Folder extends Component {
         return loaded;
     }
     
-    public void isLoaded(Folder folder){
+    public void setLoaded(){
     loaded = true;
     }
     

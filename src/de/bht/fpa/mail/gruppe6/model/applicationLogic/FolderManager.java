@@ -8,18 +8,22 @@ public class FolderManager {
     private Folder folder;
 
     public FolderManager(File file) {
-        folder = new Folder(file, true);
-        loadContent(folder);
+        if (file != null) {
+            folder = new Folder(file, true);
+            loadContent(folder);
+        }
     }
 
     public void loadContent(Folder f) {
-        if (f.getComponents().isEmpty()) {
+        if (f != null && f.getComponents().isEmpty()) {
             File file = new File(f.getPath());
-            for (File fs : file.listFiles()) {
-                    if (fs!=null&&fs.isDirectory()&&!fs.isHidden()) {
+            if (!file.isHidden() && !file.getPath().startsWith(".")) {
+                for (File fs : file.listFiles()) {
+                    if (fs.isDirectory() && !fs.isHidden()) {
                         f.addComponent(new Folder(fs, hasSubFolder(fs)));
                     }
-                
+
+                }
             }
         }
     }
@@ -37,12 +41,5 @@ public class FolderManager {
 
     public Folder getTopFolder() {
         return folder;
-    }
-
-    public void changeDirectory(File file) {
-        if (file != null) {
-         folder = new Folder(file, true);
-         loadContent(folder);
-        }
     }
 }

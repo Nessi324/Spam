@@ -26,28 +26,25 @@ public class EmailManager {
     }
 
     public void loadEmails(Folder f) {
-        if (f.getEmails().isEmpty()) {
+        if (f!=null && f.getEmails().isEmpty()&& f.getPath().length()>0) {
             File file = new File(f.getPath());
-            if (!file.isHidden()) {
-                FileFilter filter = (File name) -> name.getName().endsWith(".xml");
-                for (File x : file.listFiles(filter)) {
-                    Email email = JAXB.unmarshal(x, Email.class);
-                    if (!email.toString().contains("false")) {
-                        f.addEmail(email);
-                    }
-
+            FileFilter filter = (File name) -> name.getName().endsWith(".xml");
+            for (File x : file.listFiles(filter)) {
+                Email email = JAXB.unmarshal(x, Email.class);
+                if (!email.toString().contains("false")) {
+                    f.addEmail(email);
                 }
             }
+            
         }
     }
-
+    
     public void saveEmails(File file) {
         try {
-
             JAXBContext context = JAXBContext.newInstance(Email.class);
             Marshaller m = context.createMarshaller();
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            ObservableList<Email> tableinfo = AppController.getTableinfo();
+            ObservableList<Email> tableinfo = AppController.tableinfo;
             if (tableinfo != null && tableinfo.size() > 0 && file != null) {
                 int times = 1;
                 for (Email x : tableinfo) {
@@ -65,7 +62,7 @@ public class EmailManager {
     public ObservableList<Email> search(String pattern) {
         ersatz = FXCollections.observableArrayList();
         for (Email x : AppController.tableinfo) {
-            if (x.toString().toLowerCase().contains(pattern) || x.getText().contains(pattern)) {
+            if (x.toString().toLowerCase().contains(pattern) || x.getText().toLowerCase().contains(pattern)) {
                 String type = x.getImportance();
                 Email.Importance imp = Email.Importance.valueOf(type);
                 Email emaildata = new Email(x.getSender(), x.getReceiverListTo(), x.getSubject(), x.getText(), imp);

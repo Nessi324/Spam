@@ -1,4 +1,3 @@
-
 package de.bht.fpa.mail.gruppe6.model.applicationLogic;
 
 import de.bht.fpa.mail.gruppe6.model.data.Email;
@@ -10,10 +9,11 @@ public class ApplicationLogic implements ApplicationLogicIF {
 
     private FolderManager folder;
     private EmailManager mails;
+    private File startDirectory = new File(System.getProperty("user.home"));
 
-    public ApplicationLogic(File file) {
-        folder = new FolderManager(file);
+    public ApplicationLogic() {
         mails = new EmailManager();
+        folder = new FolderManager(startDirectory);
     }
 
     @Override
@@ -38,9 +38,11 @@ public class ApplicationLogic implements ApplicationLogicIF {
 
     @Override
     public void changeDirectory(File file) {
-    folder.changeDirectory(file);
+        if (file != null) {
+            folder = new FolderManager(file);
+        }
     }
-    
+
     @Override
     public void saveEmails(File file) {
         mails.saveEmails(file);
