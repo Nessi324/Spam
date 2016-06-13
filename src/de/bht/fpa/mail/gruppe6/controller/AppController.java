@@ -74,11 +74,10 @@ public class AppController implements Initializable {
         inItTable();
     }
 
-    
     private void inItMenue() {
         configureMenue(file, (e) -> handleAll(e));
     }
-    
+
     public void configureMenue(Menu menu, EventHandler<ActionEvent> handler) {
         for (MenuItem it : menu.getItems()) {
             if (!(it instanceof Menu)) {
@@ -98,16 +97,17 @@ public class AppController implements Initializable {
                     showHistory();
                     break;
                 case "Save":
-                    emailWindow();
+                    saveEmailDirectoryChooser();
             }
         }
     }
 
     /**
-     * emailWindow öffnet ein Fenster mit Verzeichnissen, damit wir aussuchen
-     * können wo wir die Emails speichern wollen.
+     * saveEmailDirectoryChooser öffnet ein Fenster mit Verzeichnissen, damit
+     * wir aussuchen können wo wir die Emails speichern wollen.
+     * Und speichert dann diese mit der App.
      */
-    private void emailWindow() {
+    private void saveEmailDirectoryChooser() {
         Stage stage = new Stage();
         stage.setTitle("Open New Directory");
         DirectoryChooser fs = new DirectoryChooser();
@@ -125,7 +125,7 @@ public class AppController implements Initializable {
             Folder f = (Folder) treeitem.getValue();
             app.loadEmails(f);
             for (Email x : f.getEmails()) {
-                if (x != null) {
+                if (x != null && f.getEmails().size() > 0) {
                     String type = x.getImportance();
                     Importance imp = Importance.valueOf(type);
                     Email emaildata = new Email(x.getSender(), x.getReceiverListTo(), x.getSubject(), x.getText(), imp);
@@ -150,6 +150,7 @@ public class AppController implements Initializable {
     private void filterList() {
         String pattern = searchField.getText();
         tableview.setItems(app.search(pattern));
+        //gibt auch bei der Suche regelmäßig die Anzahl der Emails an
         numberOfMails.setText(tableview.getItems().size() + "");
     }
 
@@ -157,8 +158,9 @@ public class AppController implements Initializable {
      * Diese Methode zeigt die Emails des selektierten Ordners an, falls die
      * Emails gleich sind oder null tut die Methode nichts.
      */
-    private void displayEmail(Email oldValue, Email newValue) {
+    private void showSelectedEmail(Email oldValue, Email newValue) {
         if (oldValue != newValue && newValue != null) {
+            //textflow ist ein simplerer Weg als mehrere Labels zu setzen
             textflow.getChildren().clear();
             Text text = new Text(
                     newValue.getSender() + " \n"
@@ -274,7 +276,7 @@ public class AppController implements Initializable {
 
     /**
      * compare vergleicht 2 Strings, indem er sie in Date Objekte umwandelt und
-     * dann einen Wert zurückgibt den ir zur Sortierung der EMail Tabelle
+     * dann einen Wert zurückgibt den wir zur Sortierung der EMail Tabelle
      * benutzen.
      */
     public int compare(String t1, String t2) {
@@ -301,7 +303,7 @@ public class AppController implements Initializable {
         recipients.setCellValueFactory(new PropertyValueFactory<>("receiverTo"));
         received.setComparator((String date1, String date2) -> compare(date1, date2));
         tableview.getSortOrder().add(received);
-        tableview.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> displayEmail(oldValue, newValue));
+        tableview.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> showSelectedEmail(oldValue, newValue));
     }
 
     public void expandNode(TreeItem<Component> node) {
