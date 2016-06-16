@@ -131,7 +131,6 @@ public class AppController implements Initializable {
             }
             tableview.setItems(tableinfo);
             numberOfMails.setText(tableinfo.size() + "");
-            f.setLoaded();
             directoryTree.refresh();
         }
     }
@@ -158,7 +157,7 @@ public class AppController implements Initializable {
             //textflow ist ein simplerer Weg als mehrere Labels zu setzen
             textflow.getChildren().clear();
             Text text = new Text(
-                    newValue.getSender()    + " \n"
+                       newValue.getSender() + "\n"
                     + newValue.getSubject() + "\n"
                     + newValue.getReceived()+ "\n"
                     + newValue.getReceiver()

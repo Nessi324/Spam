@@ -17,14 +17,13 @@ public class FolderManager {
     public void loadContent(Folder f) {
         if (f != null && f.getComponents().isEmpty()) {
             File file = new File(f.getPath());
-            if (!file.isHidden() && !file.getPath().startsWith(".")) {
-                for (File fs : file.listFiles()) {
-                    if (fs.isDirectory() && !fs.isHidden()) {
-                        f.addComponent(new Folder(fs, hasSubFolder(fs)));
-                    }
-
+            for (File fs : file.listFiles()) {
+                if (fs.isDirectory()) {
+                    f.addComponent(new Folder(fs, hasSubFolder(fs)));
                 }
+
             }
+
         }
     }
 

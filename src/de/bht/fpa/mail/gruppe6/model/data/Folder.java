@@ -47,18 +47,15 @@ public class Folder extends Component {
     public boolean getLoaded() {
         return loaded;
     }
-    
-    public void setLoaded(){
-    loaded = true;
+
+    public void setLoaded() {
+        loaded = true;
     }
-    
+
     @Override
     public String toString() {
-        if (getEmails().size() > 0 && getEmails() != null) {
+        if (getLoaded()) {
             return getName() + " [" + getEmails().size() + "]";
-        }
-        else if (getLoaded()) {
-            return getName() + " [0]";
         }
         return getName();
     }

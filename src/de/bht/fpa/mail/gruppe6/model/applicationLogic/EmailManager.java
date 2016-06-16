@@ -27,6 +27,7 @@ public class EmailManager {
 
     public void loadEmails(Folder f) {
         if (f!=null && f.getEmails().isEmpty()&& f.getPath().length()>0) {
+            f.setLoaded();
             File file = new File(f.getPath());
             FileFilter filter = (File name) -> name.getName().endsWith(".xml");
             for (File x : file.listFiles(filter)) {
