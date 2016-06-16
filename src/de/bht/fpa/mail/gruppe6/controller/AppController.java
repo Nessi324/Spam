@@ -126,19 +126,13 @@ public class AppController implements Initializable {
             app.loadEmails(f);
             for (Email x : f.getEmails()) {
                 if (x != null && f.getEmails().size() > 0) {
-                    String type = x.getImportance();
-                    Importance imp = Importance.valueOf(type);
-                    Email emaildata = new Email(x.getSender(), x.getReceiverListTo(), x.getSubject(), x.getText(), imp);
-                    emaildata.setRead(x.getRead());
-                    emaildata.setReceived(x.getReceived());
-                    tableinfo.add(emaildata);
+                    tableinfo.add(x);
                 }
             }
             tableview.setItems(tableinfo);
             numberOfMails.setText(tableinfo.size() + "");
             f.setLoaded();
-            treeitem.setValue(null);
-            treeitem.setValue(f);
+            directoryTree.refresh();
         }
     }
 
@@ -149,7 +143,8 @@ public class AppController implements Initializable {
      */
     private void filterList() {
         String pattern = searchField.getText();
-        tableview.setItems(app.search(pattern));
+        ObservableList<Email> liste = FXCollections.observableArrayList(app.search(pattern));
+        tableview.setItems(liste);
         //gibt auch bei der Suche regelmäßig die Anzahl der Emails an
         numberOfMails.setText(tableview.getItems().size() + "");
     }
@@ -163,20 +158,15 @@ public class AppController implements Initializable {
             //textflow ist ein simplerer Weg als mehrere Labels zu setzen
             textflow.getChildren().clear();
             Text text = new Text(
-                    newValue.getSender() + " \n"
+                    newValue.getSender()    + " \n"
                     + newValue.getSubject() + "\n"
-                    + newValue.getReceived() + "\n"
+                    + newValue.getReceived()+ "\n"
                     + newValue.getReceiver()
             );
             text.setFont(Font.font("System", FontWeight.NORMAL, 12));
             textflow.getChildren().add(text);
             textarea.clear();
-            String text2 = ("Betreff: " + newValue.getSubject() + " \n"
-                    + "Datum: " + newValue.getReceived() + "\n"
-                    + "Von: " + newValue.getSender()
-                    + "   Antwort an: " + newValue.getReceiverCC() + "\n"
-                    + "An: " + newValue.getReceiverTo() + "\n"
-                    + "Nachricht: \n" + newValue.getText());
+            String text2 = (newValue.getText());
             textarea.appendText(text2);
         }
     }

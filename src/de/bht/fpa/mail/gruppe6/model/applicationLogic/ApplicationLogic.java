@@ -3,13 +3,13 @@ package de.bht.fpa.mail.gruppe6.model.applicationLogic;
 import de.bht.fpa.mail.gruppe6.model.data.Email;
 import de.bht.fpa.mail.gruppe6.model.data.Folder;
 import java.io.File;
-import javafx.collections.ObservableList;
+import java.util.List;
 
 public class ApplicationLogic implements ApplicationLogicIF {
 
     private FolderManager folder;
     private EmailManager mails;
-    private File startDirectory = new File(System.getProperty("user.home"));
+    private static File startDirectory = new File(System.getProperty("user.home"));
 
     public ApplicationLogic() {
         mails = new EmailManager();
@@ -27,7 +27,7 @@ public class ApplicationLogic implements ApplicationLogicIF {
     }
 
     @Override
-    public ObservableList<Email> search(String pattern) {
+    public List<Email> search(String pattern) {
         return mails.search(pattern);
     }
 

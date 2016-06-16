@@ -5,9 +5,10 @@ import de.bht.fpa.mail.gruppe6.model.data.Email;
 import de.bht.fpa.mail.gruppe6.model.data.Folder;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
@@ -20,7 +21,6 @@ import javax.xml.bind.Marshaller;
  */
 public class EmailManager {
 
-    private static ObservableList<Email> ersatz;
 
     public EmailManager() {
     }
@@ -48,7 +48,7 @@ public class EmailManager {
             if (tableinfo != null && tableinfo.size() > 0 && file != null) {
                 int times = 1;
                 for (Email x : tableinfo) {
-                    File newpath = new File(file.getPath() + "\\email" + times + ".xml");
+                    File newpath = new File(file, "email" + times + ".xml");
                     m.marshal(x, newpath);
                     times = times + 1;
                 }
@@ -59,16 +59,11 @@ public class EmailManager {
 
     }
 
-    public ObservableList<Email> search(String pattern) {
-        ersatz = FXCollections.observableArrayList();
+    public List<Email> search(String pattern) {
+        ArrayList<Email> ersatz = new ArrayList<>();
         for (Email x : AppController.tableinfo) {
             if (x.toString().toLowerCase().contains(pattern) || x.getText().toLowerCase().contains(pattern)) {
-                String type = x.getImportance();
-                Email.Importance imp = Email.Importance.valueOf(type);
-                Email emaildata = new Email(x.getSender(), x.getReceiverListTo(), x.getSubject(), x.getText(), imp);
-                emaildata.setRead(x.getRead());
-                emaildata.setReceived(x.getReceived());
-                ersatz.add(emaildata);
+                ersatz.add(x);
             }
         }
         return ersatz;
