@@ -6,7 +6,7 @@ import java.io.File;
 public class FolderManager {
 
     private Folder folder;
-
+    private EmailManager mails = new EmailManager();
     public FolderManager(File file) {
         if (file != null) {
             folder = new Folder(file, true);
@@ -21,9 +21,7 @@ public class FolderManager {
                 if (fs.isDirectory()) {
                     f.addComponent(new Folder(fs, hasSubFolder(fs)));
                 }
-
             }
-
         }
     }
 

@@ -21,12 +21,13 @@ import javax.xml.bind.Marshaller;
  */
 public class EmailManager {
 
+    private Folder currentFolder;
 
     public EmailManager() {
     }
 
     public void loadEmails(Folder f) {
-        if (f!=null && f.getEmails().isEmpty()&& f.getPath().length()>0) {
+        if (f != null && f.getEmails().isEmpty() && f.getPath().length() > 0) {
             f.setLoaded();
             File file = new File(f.getPath());
             FileFilter filter = (File name) -> name.getName().endsWith(".xml");
@@ -36,10 +37,10 @@ public class EmailManager {
                     f.addEmail(email);
                 }
             }
-            
+            currentFolder = f;
         }
     }
-    
+
     public void saveEmails(File file) {
         try {
             JAXBContext context = JAXBContext.newInstance(Email.class);
@@ -62,7 +63,7 @@ public class EmailManager {
 
     public List<Email> search(String pattern) {
         ArrayList<Email> ersatz = new ArrayList<>();
-        for (Email x : AppController.tableinfo) {
+        for (Email x : currentFolder.getEmails()) {
             if (x.toString().toLowerCase().contains(pattern) || x.getText().toLowerCase().contains(pattern)) {
                 ersatz.add(x);
             }
